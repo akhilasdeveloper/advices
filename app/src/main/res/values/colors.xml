@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#000000</color>
+
+    <color name="navigationBackground">#111111</color>
+    <color name="navigationForeground">#ffffff</color>
+    <color name="navigationDivider">#444444</color>
+    <color name="disabledColorPrimary">#444444</color>
+    <color name="disabledColorSecondary">#666666</color>
+
+    <color name="transparent">#00000000</color>
+
+</resources>

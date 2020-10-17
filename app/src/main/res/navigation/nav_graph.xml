@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph"
+    app:startDestination="@id/adviceFragment">
+
+    <fragment
+        android:id="@+id/adviceFragment"
+        android:name="com.akhil.advices.ui.fragments.AdviceFragment"
+        android:label="AdviceFragment" />
+</navigation>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/asText"
+        android:icon="@drawable/ic_baseline_text_fields_24"
+        android:title="Share as text" />
+    <item
+        android:id="@+id/asImage"
+        android:icon="@drawable/ic_baseline_image_24"
+        android:title="Share as image"/>
+
+</menu>
