@@ -13,14 +13,21 @@ import android.view.WindowManager
 import android.view.animation.AlphaAnimation
 import android.view.animation.RotateAnimation
 import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TimePicker
 import android.widget.Toast
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.drawToBitmap
+import androidx.core.view.updatePadding
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.akhil.advices.R
 import com.akhil.advices.dao.TransitionAndText
 import com.akhil.advices.ui.MainViewModel
@@ -50,7 +57,7 @@ import javax.inject.Inject
 class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTimeSetListener {
 
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<NestedScrollView>
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
     internal lateinit var transit: TransitionAndText
     internal lateinit var popupMenu: PopupMenu
 
@@ -67,6 +74,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
 
     @Inject
     lateinit var utilities: Utilities
+
     @Inject
     lateinit var notificationUtil: NotificationUtil
     private var isTextView = true
@@ -83,11 +91,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val w: Window = requireActivity().window
-        w.setFlags(
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-        )
+
         timePickerDialog2 = TimePickerDialog(
             requireContext(),
             R.style.TimePickerDialogStyle,
@@ -100,6 +104,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
         setFont()
         setClickListners()
         setBottomSheet()
+        init()
         setPopuMenu()
         initAnimations()
         subscribeObservers()
@@ -124,6 +129,23 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
 
     }
 
+    private fun init() {
+        val peekHeight = bottomSheetBehavior.peekHeight
+        val bottomSheetParams = bottom_sheet.layoutParams as CoordinatorLayout.LayoutParams
+        val bottomSheetHeight = bottomSheetParams.height
+        ViewCompat.setOnApplyWindowInsetsListener(bottom_sheet) { v, insets ->
+            val systemWindows =
+                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            val barMenuParams = bar_menus.layoutParams as LinearLayout.LayoutParams
+            val barSettingsParams = bar_settings.layoutParams as LinearLayout.LayoutParams
+            barMenuParams.bottomMargin = systemWindows.bottom + 50
+            barSettingsParams.bottomMargin = systemWindows.bottom + 50
+            bottomSheetParams.height = (systemWindows.bottom * 2) + bottomSheetHeight + 100
+            bottomSheetBehavior.peekHeight = systemWindows.bottom + peekHeight + 50
+            return@setOnApplyWindowInsetsListener insets
+        }
+    }
+
     private fun setFont() {
         val font = utilities.getFont()
         text_view.typeface = font
@@ -141,7 +163,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     }
 
     private fun setPopuMenu() {
-        popupMenu = PopupMenu(requireContext(), pivot_share)
+        popupMenu = PopupMenu(requireContext(), share)
         popupMenu.menuInflater.inflate(R.menu.share_menu, popupMenu.menu)
         popupMenu.setOnMenuItemClickListener { p0 ->
             var bool: Boolean = false
@@ -177,7 +199,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
 
     private fun setBottomSheet() {
         bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet)
-
+        bottomSheetBehavior.isGestureInsetBottomIgnored = true
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -246,13 +268,8 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
             setNextFont()
         }
 
-        /*edit.setOnClickListener {
-            toggleEditMode()
-        }*/
-
         constraintView.setOnClickListener {
             toggleEditMode()
-//            hideEditMode()
         }
 
         text_view.setOnClickListener {
@@ -335,31 +352,26 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     private fun shareAsImage() {
         isShareImageClicked = false
         hideOtherFields()
-        GlobalScope.launch(Dispatchers.IO) {
-            val bitmap = utilities.viewToImage(main_activity_bg)
-            bitmap?.let {
-                val imageUri: Uri? = utilities.toImageURI(it)
-                withContext(Dispatchers.Main) {
-                    showOtherFields()
-                    val shareIntent: Intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_STREAM, imageUri)
-                        type = "image/jpeg"
-                    }
-                    startActivity(Intent.createChooser(shareIntent, "Share image via"))
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val bitmap = main_activity_bg.drawToBitmap()
+            val imageUri: Uri? = utilities.toImageURI(bitmap)
+            withContext(Dispatchers.Main) {
+                showOtherFields()
+                val shareIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_STREAM, imageUri)
+                    type = "image/jpeg"
                 }
-
+                startActivity(Intent.createChooser(shareIntent, "Share image via"))
             }
         }
     }
 
     private fun hideOtherFields() {
-//        refresh.visibility = View.GONE
         bottom_sheet.visibility = View.GONE
     }
 
     private fun showOtherFields() {
-//        refresh.visibility = View.VISIBLE
         bottom_sheet.visibility = View.VISIBLE
     }
 

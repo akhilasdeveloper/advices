@@ -292,16 +292,6 @@ class Utilities @Inject constructor(
         return Color.rgb(getHighValue(c1R, c2R), getHighValue(c1G, c2G), getHighValue(c1B, c2B))
     }
 
-    suspend fun viewToImage(view: View): Bitmap? {
-        val w = view.width
-        val h = view.height
-        val returnedBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(returnedBitmap)
-        val bgDrawable = view.background
-        if (bgDrawable != null) bgDrawable.draw(canvas) else canvas.drawColor(Color.WHITE)
-        view.draw(canvas)
-        return returnedBitmap
-    }
 
     suspend fun toImageURI(bitmap: Bitmap): Uri? {
         var file: File? = null
@@ -311,14 +301,10 @@ class Utilities @Inject constructor(
             val folder: File = File(
                 context.cacheDir.toString() + File.separator + "Advices Temp Files"
             )
-            var success = true
-            if (!folder.exists()) {
-                success = folder.mkdir()
-            }
             val filename = "advices.jpg"
             file = File(folder.path, filename)
             fos1 = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos1)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
             imageUri = FileProvider.getUriForFile(
                 context.applicationContext,
                 context.applicationContext.packageName.toString() + ".provider",

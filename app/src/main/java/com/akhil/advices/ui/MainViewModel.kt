@@ -16,13 +16,16 @@ import com.akhil.advices.util.Constants.NETWORK_TIMEOUT
 import com.akhil.advices.util.Constants.NETWORK_TIMEOUT_MESSAGE
 import com.akhil.advices.util.Constants.TESTING_NETWORK_DELAY
 import com.akhil.advices.util.Utilities
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
+import javax.inject.Inject
 
+@HiltViewModel
 class MainViewModel
-@ViewModelInject constructor(
+@Inject constructor(
     private val adviceRepository: AdviceRepository,
     private val utilities: Utilities
 ) : ViewModel() {
