@@ -4,12 +4,11 @@ import android.app.TimePickerDialog
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.view.animation.AlphaAnimation
 import android.view.animation.RotateAnimation
 import android.view.inputmethod.InputMethodManager
@@ -21,8 +20,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.drawToBitmap
-import androidx.core.view.updatePadding
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -45,7 +42,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_advice.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -70,7 +66,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     internal var isAnimationLoading = MutableLiveData(false)
     private var isShareImageClicked = false
     private var message = ""
-    lateinit var timePickerDialog2: TimePickerDialog
+    private lateinit var timePickerDialog2: TimePickerDialog
 
     @Inject
     lateinit var utilities: Utilities
@@ -133,7 +129,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
         val peekHeight = bottomSheetBehavior.peekHeight
         val bottomSheetParams = bottom_sheet.layoutParams as CoordinatorLayout.LayoutParams
         val bottomSheetHeight = bottomSheetParams.height
-        ViewCompat.setOnApplyWindowInsetsListener(bottom_sheet) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(bottom_sheet) { _, insets ->
             val systemWindows =
                 insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             val barMenuParams = bar_menus.layoutParams as LinearLayout.LayoutParams
@@ -166,7 +162,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
         popupMenu = PopupMenu(requireContext(), share)
         popupMenu.menuInflater.inflate(R.menu.share_menu, popupMenu.menu)
         popupMenu.setOnMenuItemClickListener { p0 ->
-            var bool: Boolean = false
+            var bool = false
             p0?.let { menuItem ->
                 when (menuItem.itemId) {
                     R.id.asText -> {
@@ -353,7 +349,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
         isShareImageClicked = false
         hideOtherFields()
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val bitmap = main_activity_bg.drawToBitmap()
+            val bitmap = main_activity_bg.drawToBitmap(Bitmap.Config.ARGB_8888)
             val imageUri: Uri? = utilities.toImageURI(bitmap)
             withContext(Dispatchers.Main) {
                 showOtherFields()

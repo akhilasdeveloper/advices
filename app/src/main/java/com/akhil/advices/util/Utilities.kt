@@ -3,9 +3,10 @@ package com.akhil.advices.util
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.TransitionDrawable
@@ -13,17 +14,15 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
-import android.view.View
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.akhil.advices.R
 import com.akhil.advices.dao.DrawableAndText
 import com.akhil.advices.dao.Theme
 import com.akhil.advices.dao.TransitionAndText
-import com.akhil.advices.receivers.AlertReceiver
-import com.akhil.advices.util.Constants.ALARM_ACTION_STRING
-import com.akhil.advices.util.Constants.ALARM_REQUEST_ID
 import com.akhil.advices.util.Constants.COLOR_DIFFERENCE
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -38,8 +37,6 @@ class Utilities @Inject constructor(
     var alarmManager: AlarmManager
 ) {
 
-    private lateinit var connectivityManager:ConnectivityManager
-
     var typefaces = ArrayList<Typeface>()
     var fontPaths = arrayListOf<Int>(
         R.font.roboto_regular,
@@ -53,35 +50,35 @@ class Utilities @Inject constructor(
         R.font.shadowsintolight_regular,
         R.font.yanonekaffeesatz_variablefont_wght
     )
-    init {
-        connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        for (name in fontPaths){
+    init {
+
+        for (name in fontPaths) {
             ResourcesCompat.getFont(context, name)?.let {
                 typefaces.add(it)
             }
         }
     }
 
-    fun getFont():Typeface{
+    fun getFont(): Typeface {
         return typefaces[getSavedFont()]
     }
 
 
-    fun getNextFont():Typeface{
+    fun getNextFont(): Typeface {
         var currFont = getSavedFont()
         currFont++
-        if (currFont>=(typefaces.size))
+        if (currFont >= (typefaces.size))
             currFont = 0
         setSavedFont(currFont)
         return typefaces[currFont]
     }
 
-    fun getSavedFont():Int{
+    private fun getSavedFont(): Int {
         return sharedPref.getInt(Constants.KEY_SAVED_FONT, 0)
     }
 
-    fun setSavedFont(font: Int){
+    private fun setSavedFont(font: Int) {
         sharedPref.edit()
             .putInt(Constants.KEY_SAVED_FONT, font)
             .apply()
@@ -114,7 +111,10 @@ class Utilities @Inject constructor(
         )
     }
 
-    fun getTransitionByColor(transitionDrawable: TransitionDrawable, color: Int): TransitionAndText {
+    fun getTransitionByColor(
+        transitionDrawable: TransitionDrawable,
+        color: Int
+    ): TransitionAndText {
         val drawableArray = ArrayList<Drawable>()
         drawableArray.add(transitionDrawable.getDrawable(1))
         val theme2 = getThemeByColor(color)
@@ -135,7 +135,7 @@ class Utilities @Inject constructor(
         return shape
     }
 
-    fun getBlackTheme(): DrawableAndText {
+    private fun getBlackTheme(): DrawableAndText {
         val col1 = Color.rgb(255, 253, 120)
         val col2 = Color.rgb(255, 159, 1)
         val col3 = Color.rgb(0, 0, 0)
@@ -202,7 +202,7 @@ class Utilities @Inject constructor(
         )
     }
 
-    fun getThemeByColor(color: Int): DrawableAndText {
+    private fun getThemeByColor(color: Int): DrawableAndText {
         val col1R = Color.red(color)
         val col1G = Color.green(color)
         val col1B = Color.blue(color)
@@ -255,14 +255,14 @@ class Utilities @Inject constructor(
         )
     }
 
-    fun getLowValue(value: Int, diff: Int): Int {
+    private fun getLowValue(value: Int, diff: Int): Int {
         var newValue = value - diff
         if (newValue < 0)
             newValue = 0
         return newValue
     }
 
-    fun getHighValue(value: Int, diff: Int): Int {
+    private fun getHighValue(value: Int, diff: Int): Int {
         var newValue = value + diff
         if (newValue > 254)
             newValue = 254
@@ -293,74 +293,85 @@ class Utilities @Inject constructor(
     }
 
 
-    suspend fun toImageURI(bitmap: Bitmap): Uri? {
-        var file: File? = null
-        var fos1: FileOutputStream? = null
-        var imageUri: Uri? = null
-        try {
-            val folder: File = File(
-                context.cacheDir.toString() + File.separator + "Advices Temp Files"
-            )
-            val filename = "advices.jpg"
-            file = File(folder.path, filename)
-            fos1 = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
-            imageUri = FileProvider.getUriForFile(
-                context.applicationContext,
-                context.applicationContext.packageName.toString() + ".provider",
-                file
-            )
-        } catch (ex: java.lang.Exception) {
-        } finally {
+    suspend fun toImageURI(bitmap: Bitmap?): Uri? {
+        bitmap?.let {
+            var file: File? = null
+            var fos1: FileOutputStream? = null
+            var imageUri: Uri? = null
             try {
-                fos1!!.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
+                val folder = File(
+                    context.cacheDir.toString() + File.separator + "Advices Temp Files"
+                )
+                if (!folder.exists()) {
+                    folder.mkdir()
+                }
+                val filename = "advices.jpg"
+                file = File(folder.path, filename)
+                withContext(Dispatchers.IO) {
+                    fos1 = FileOutputStream(file)
+                }
+
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1)
+                imageUri = FileProvider.getUriForFile(
+                    context.applicationContext,
+                    context.applicationContext.packageName.toString() + ".provider",
+                    file
+                )
+            } catch (ex: java.lang.Exception) {
+            } finally {
+                try {
+                    withContext(Dispatchers.IO) {
+                        fos1?.close()
+                    }
+                } catch (e: IOException) {
+                    Timber.d("Unable to close connection Utilities toImageURI : ${e.toString()}")
+                }
             }
+            return imageUri
         }
-        return imageUri
+        return null
     }
 
-    fun setNextAlarm(){
+    fun setNextAlarm() {
         var alarmTime = getAlarm()
-        alarmTime+=Constants.DAY_MILLIS
+        alarmTime += Constants.DAY_MILLIS
         setAlarmTime(alarmTime)
-        setAlarm(alarmTime,context)
+        setAlarm(alarmTime, context)
     }
 
-    fun setAlarm(millis: Long, context: Context){
+    fun setAlarm(millis: Long, context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, millis, pendingIntent)
         else
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, millis, pendingIntent)
     }
 
-    fun cancelAlarm(){
+    fun cancelAlarm() {
         alarmManager.cancel(pendingIntent)
     }
 
-    fun setScheduled(checked: Boolean){
+    fun setScheduled(checked: Boolean) {
         sharedPref.edit()
             .putBoolean(Constants.KEY_IS_SCHEDULED, checked)
             .apply()
     }
 
-    fun setAlarmTime(millis: Long){
+    fun setAlarmTime(millis: Long) {
         sharedPref.edit()
             .putLong(Constants.KEY_ALARM_TIME, millis)
             .apply()
     }
 
-    fun getAlarm():Long{
+    fun getAlarm(): Long {
         return sharedPref.getLong(Constants.KEY_ALARM_TIME, 0)
     }
 
-    fun isScheduled():Boolean{
+    fun isScheduled(): Boolean {
         return sharedPref.getBoolean(Constants.KEY_IS_SCHEDULED, false)
     }
 
-    fun isConnectedToTheInternet(): Boolean{
-        try{
+    fun isConnectedToTheInternet(): Boolean {
+        try {
             var result = false
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -388,7 +399,7 @@ class Utilities @Inject constructor(
                 }
             }
             return result
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Timber.d("isConnectedToTheInternet: ${e.message}")
         }
         return false

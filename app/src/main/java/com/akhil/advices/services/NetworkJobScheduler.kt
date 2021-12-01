@@ -8,12 +8,9 @@ import com.akhil.advices.util.Constants
 import com.akhil.advices.util.NotificationUtil
 import com.akhil.advices.util.Utilities
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -33,7 +30,7 @@ class NetworkJobScheduler : JobService() {
 
     private fun doBackgroundWork(params: JobParameters) {
         val theme = utilities.getRandomTheme()
-        GlobalScope.launch(Dispatchers.Main) {
+        CoroutineScope(Dispatchers.Main).launch {
             val job = withTimeoutOrNull(Constants.NETWORK_TIMEOUT) {
                 adviceRepository.getAdvice()
                     .onEach { dataState ->
