@@ -38,7 +38,7 @@ class Utilities @Inject constructor(
 ) {
 
     var typefaces = ArrayList<Typeface>()
-    var fontPaths = arrayListOf<Int>(
+    private var fontPaths = arrayListOf<Int>(
         R.font.roboto_regular,
         R.font.anton_regular,
         R.font.caveat_regular,
@@ -48,7 +48,10 @@ class Utilities @Inject constructor(
         R.font.peddana_regular,
         R.font.sansitaswashed_variablefont_wght,
         R.font.shadowsintolight_regular,
-        R.font.yanonekaffeesatz_variablefont_wght
+        R.font.yanonekaffeesatz_variablefont_wght,
+        R.font.luckiest_guy_regular,
+        R.font.permanent_marker_regular,
+        R.font.roboto_mono_regular
     )
 
     init {
@@ -136,9 +139,9 @@ class Utilities @Inject constructor(
     }
 
     private fun getBlackTheme(): DrawableAndText {
-        val col1 = Color.rgb(255, 253, 120)
-        val col2 = Color.rgb(255, 159, 1)
-        val col3 = Color.rgb(0, 0, 0)
+        val col1 = Color.rgb(92, 0, 171)
+        val col2 = Color.rgb(92, 0, 171)
+        val col3 = Color.rgb(255, 255, 255)
 
         val theme = Theme(col1, col2, col3)
         return DrawableAndText(

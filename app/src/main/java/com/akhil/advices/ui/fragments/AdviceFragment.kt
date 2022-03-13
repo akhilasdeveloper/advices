@@ -131,7 +131,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
         val bottomSheetHeight = bottomSheetParams.height
         ViewCompat.setOnApplyWindowInsetsListener(bottom_sheet) { _, insets ->
             val systemWindows =
-                insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+                insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val barMenuParams = bar_menus.layoutParams as LinearLayout.LayoutParams
             val barSettingsParams = bar_settings.layoutParams as LinearLayout.LayoutParams
             barMenuParams.bottomMargin = systemWindows.bottom + 50
