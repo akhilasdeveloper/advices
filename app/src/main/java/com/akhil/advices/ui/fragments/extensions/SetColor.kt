@@ -12,9 +12,9 @@ import kotlinx.android.synthetic.main.fragment_advice.*
 
 internal fun AdviceFragment.setShareMenuIconTint() {
     for (i in 0 until popupMenu.menu.size()) {
-        val drawable: Drawable = popupMenu.menu.getItem(i).icon
-        drawable.mutate()
-        drawable.setTint(transit.accent)
+        val drawable: Drawable? = popupMenu.menu.getItem(i).icon
+        drawable?.mutate()
+        drawable?.setTint(transit.accent)
     }
 }
 

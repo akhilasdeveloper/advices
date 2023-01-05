@@ -102,7 +102,7 @@ object AppModule {
         context,
         Constants.ALARM_REQUEST_ID,
         intent,
-        0)
+        PendingIntent.FLAG_IMMUTABLE)
 
     @Singleton
     @Provides
