@@ -1,8 +1,6 @@
 package com.akhil.advices.ui.fragments
 
 import android.app.TimePickerDialog
-import android.app.job.JobInfo
-import android.app.job.JobScheduler
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -23,7 +21,6 @@ import androidx.core.view.drawToBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.akhil.advices.R
 import com.akhil.advices.dao.TransitionAndText
@@ -36,7 +33,6 @@ import com.akhil.advices.util.Constants.INTENT_KEY_MESSAGE
 import com.akhil.advices.util.Constants.NETWORK_NOT_AVAILABLE_MESSAGE
 import com.akhil.advices.util.Constants.NETWORK_SUCCESS
 import com.akhil.advices.util.Constants.NETWORK_TIMEOUT_MESSAGE
-import com.akhil.advices.util.NotificationUtil
 import com.akhil.advices.util.Utilities
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,18 +67,11 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     @Inject
     lateinit var utilities: Utilities
 
-    @Inject
-    lateinit var notificationUtil: NotificationUtil
     private var isTextView = true
 
     @Inject
     lateinit var imm: InputMethodManager
 
-    @Inject
-    lateinit var jobInfo: JobInfo
-
-    @Inject
-    lateinit var jobScheduler: JobScheduler
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -223,6 +212,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
             if (!isLoading) {
                 getData()
             }
+
         }
 
         share.setOnClickListener {
@@ -381,7 +371,7 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     }
 
     private fun subscribeObservers() {
-        viewModel.dataState.observe(viewLifecycleOwner, Observer { response ->
+        viewModel.dataState.observe(viewLifecycleOwner) { response ->
             isLoading = false
             initNextTransition()
             transit.drawable.startTransition(Constants.ANIMATION_DURATION)
@@ -400,12 +390,12 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
                     message = NETWORK_NOT_AVAILABLE_MESSAGE
                 }
             }
-        })
+        }
 
-        isAnimationLoading.observe(viewLifecycleOwner, Observer {
+        isAnimationLoading.observe(viewLifecycleOwner) {
             if (isShareImageClicked)
                 shareAsImage()
-        })
+        }
     }
 
     private fun shareAsText() {

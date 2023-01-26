@@ -6,21 +6,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.akhil.advices.api.AdviceResponse
 import com.akhil.advices.dao.MainResponse
 import com.akhil.advices.repositories.AdviceRepository
-import com.akhil.advices.util.Constants
 import com.akhil.advices.util.Constants.NETWORK_NOT_AVAILABLE_MESSAGE
 import com.akhil.advices.util.Constants.NETWORK_SUCCESS
 import com.akhil.advices.util.Constants.NETWORK_TIMEOUT
 import com.akhil.advices.util.Constants.NETWORK_TIMEOUT_MESSAGE
-import com.akhil.advices.util.Constants.TESTING_NETWORK_DELAY
 import com.akhil.advices.util.Utilities
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,7 +34,7 @@ class MainViewModel
     fun getData() {
 
         if (!utilities.isConnectedToTheInternet()) {
-            val mainResponse: MainResponse = MainResponse(
+            val mainResponse = MainResponse(
                 null,
                 NETWORK_NOT_AVAILABLE_MESSAGE
             )

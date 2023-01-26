@@ -80,29 +80,33 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providesInputManager(@ApplicationContext context: Context):InputMethodManager
-            =context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    fun providesInputManager(@ApplicationContext context: Context): InputMethodManager =
+        context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
     @Singleton
     @Provides
-    fun provideAlarmIntent(@ApplicationContext context: Context):Intent = Intent(context, AlertReceiver::class.java).apply {
-        action = Constants.ALARM_ACTION_STRING
-    }
+    fun provideAlarmIntent(@ApplicationContext context: Context): Intent =
+        Intent(context, AlertReceiver::class.java).apply {
+            action = Constants.ALARM_ACTION_STRING
+        }
 
     @Singleton
     @Provides
-    fun provideAlarm(@ApplicationContext context: Context): AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    fun provideAlarm(@ApplicationContext context: Context): AlarmManager =
+        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     @Singleton
     @Provides
     fun provideAlarmPendingIntent(
         @ApplicationContext context: Context,
-        intent :Intent
-    ):PendingIntent = PendingIntent.getBroadcast(
+        intent: Intent
+    ): PendingIntent = PendingIntent.getBroadcast(
         context,
         Constants.ALARM_REQUEST_ID,
         intent,
-        PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.FLAG_IMMUTABLE
+    )
+
 
     @Singleton
     @Provides

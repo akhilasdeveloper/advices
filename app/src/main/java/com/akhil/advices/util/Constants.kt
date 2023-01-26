@@ -14,23 +14,15 @@ object Constants {
     const val KEY_SAVED_FONT = "KEY_SAVED_FONT"
     const val FONT_SIZE = 32f
     const val ALARM_ACTION_STRING = "ADVICES_ALARM_ACTION_STRING"
-    const val KEY_SCHEDULED_TIME = "KEY_SCHEDULED_TIME"
     const val JOB_ID = 123
-    const val JOB_INTERVAL : Long = (1000 * 60 * 15)
-    const val VIEW_SCALE_FACTOR = 2
     const val ALARM_REQUEST_ID = 100
-    const val NOTIFICATION_REQUEST_ID = 101
     const val NOTIFICATION_ID = 190
     const val DAY_MILLIS = 1000 * 60 * 60 * 24
     const val JOB_LATENCY = (1000 * 60 * 1).toLong()
-    const val FILE_NAME = "Advices.jpg"
     const val INTENT_KEY_MESSAGE = "INTENT_KEY_MESSAGE"
     const val INTENT_KEY_COLOR1 = "INTENT_KEY_COLOR1"
-    const val INTENT_KEY_COLOR2 = "INTENT_KEY_COLOR2"
 
-    const val ERROR_UNKNOWN = "Unable to resolve host"
     const val NETWORK_TIMEOUT = 5000L
-    const val TESTING_NETWORK_DELAY = 0L
     const val NETWORK_SUCCESS = "Success"
     const val NETWORK_TIMEOUT_MESSAGE = "Network timed out"
     const val NETWORK_NOT_AVAILABLE_MESSAGE = "Check network settings"

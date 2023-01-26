@@ -12,31 +12,21 @@ class AdviceRepository @Inject constructor( private val advicesMainService: Advi
 
     suspend fun getAdvice(): Flow<AdviceResponse> = flow {
         try{
-            val data = advicesMainService.getAdvice()
-            data?.let {
+            advicesMainService.getAdvice()?.let {data->
                 emit(data)
-            }?: kotlin.run {
-                emit(
-                    AdviceResponse(
-                        Slip(
-                            0,
-                            "Response Broken.."
-                        )
-                    )
-                )
+                return@flow
             }
-            Timber.d("Data: $data")
         }catch (e: Exception){
             Timber.d("Data Error: ${e.toString()}")
-            emit(
-                AdviceResponse(
-                    Slip(
-                        0,
-                        "Response Broken.."
-                    )
+        }
+        emit(
+            AdviceResponse(
+                Slip(
+                    0,
+                    "Response Broken.."
                 )
             )
-        }
+        )
     }
 
 }
