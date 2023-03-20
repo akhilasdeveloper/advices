@@ -1,9 +1,11 @@
 package com.akhil.advices.ui.fragments
 
+import android.Manifest
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.View
@@ -25,7 +27,9 @@ import androidx.lifecycle.lifecycleScope
 import com.akhil.advices.R
 import com.akhil.advices.dao.TransitionAndText
 import com.akhil.advices.ui.MainViewModel
+import com.akhil.advices.ui.checkPermission
 import com.akhil.advices.ui.fragments.extensions.*
+import com.akhil.advices.ui.initPermission
 import com.akhil.advices.util.Constants
 import com.akhil.advices.util.Constants.FONT_SIZE
 import com.akhil.advices.util.Constants.INTENT_KEY_COLOR1
@@ -128,6 +132,10 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
             bottomSheetParams.height = (systemWindows.bottom * 2) + bottomSheetHeight + 100
             bottomSheetBehavior.peekHeight = systemWindows.bottom + peekHeight + 50
             return@setOnApplyWindowInsetsListener insets
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            initPermission()
         }
     }
 
@@ -234,15 +242,30 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
 
         switchButton.isChecked = utilities.isScheduled()
         setTimeText()
-        switchButton.setOnCheckedChangeListener { _, isChecked ->
-            utilities.setScheduled(isChecked)
+        switchButton.setOnCheckedChangeListener { btn, isChecked ->
+
             if (isChecked) {
-                utilities.setAlarmTime(utilities.getAlarm())
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    checkPermission(Manifest.permission.POST_NOTIFICATIONS) {
+                        if (!it) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Please allow notification access to show notifications.",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                            btn.isChecked = false
+                        } else {
+                            setSwitchChecked(true)
+                        }
+                    }
+                } else {
+                    setSwitchChecked(true)
+                }
             } else {
-                utilities.cancelAlarm()
+                setSwitchChecked(false)
             }
-            setSwitchTint()
-            setTimeButtonBackground()
+
         }
 
         time.setOnClickListener {
@@ -268,6 +291,17 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
             setTint()
         }
 
+    }
+
+    private fun setSwitchChecked(isChecked: Boolean) {
+        utilities.setScheduled(isChecked)
+        if (isChecked) {
+            utilities.setAlarmTime(utilities.getAlarm())
+        } else {
+            utilities.cancelAlarm()
+        }
+        setSwitchTint()
+        setTimeButtonBackground()
     }
 
     private fun toggleEditMode() {
@@ -412,6 +446,27 @@ class AdviceFragment : Fragment(R.layout.fragment_advice), TimePickerDialog.OnTi
     }
 
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS) {
+                if (!it) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Please allow notification access to show notifications.",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } else {
+                    setScheduler(hourOfDay, minute)
+                }
+            }
+        } else {
+            setScheduler(hourOfDay, minute)
+        }
+
+    }
+
+    private fun setScheduler(hourOfDay: Int, minute: Int) {
         val c = Calendar.getInstance()
         c.set(Calendar.HOUR_OF_DAY, hourOfDay)
         c.set(Calendar.MINUTE, minute)
